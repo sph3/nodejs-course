@@ -13,13 +13,32 @@ const customers = [];
  * statement - []
  */
 
+app.get('/account/statement/', (req, res) => {
+  const { cpf } = req.headers;
+
+  const customer = customers.find((customer) => customer.cpf === cpf);
+  if (!customer) {
+    return res.status(400).json({ error: "Customer doesn't exist" });
+  }
+
+  return res.status(200).json(customer.statement);
+});
+
 app.post('/account', (req, res) => {
   const { name, cpf } = req.body;
-  const id = uuid();
+
+  const customerAlreadyExists = customers.some(
+    (customer) => customer.cpf === cpf
+  );
+
+  if (customerAlreadyExists) {
+    return res.status(400).json({ error: 'CPF already registered' });
+  }
+
   customers.push({
     cpf,
     name,
-    id,
+    id: uuid(),
     statement: [],
   });
 

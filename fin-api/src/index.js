@@ -46,9 +46,10 @@ app.get('/account/statement', checkAccountExists, (req, res) => {
   return res.status(200).json(filteredStatement);
 });
 
-// app.get('/account/statement', checkAccountExists, (req, res) => {
-//   return res.status(200).json(req.customer.statement);
-// });
+app.get('/account', checkAccountExists, (req, res) => {
+  const { customer } = req;
+  return res.status(200).json(customer);
+});
 
 app.post('/account', (req, res) => {
   const { name, cpf } = req.body;
@@ -111,6 +112,15 @@ app.post('/account/withdraw', checkAccountExists, (req, res) => {
   return res
     .status(201)
     .json({ message: 'Operation successful', new_balance: balance - amount });
+});
+
+app.put('/account', checkAccountExists, (req, res) => {
+  const { customer } = req;
+  const { name: newName } = req.body;
+
+  customer.name = newName;
+
+  return res.status(201).json({ message: 'Account updated', newName: newName });
 });
 
 app.delete('/account/delete', checkAccountExists, (req, res) => {

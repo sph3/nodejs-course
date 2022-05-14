@@ -113,5 +113,16 @@ app.post('/account/withdraw', checkAccountExists, (req, res) => {
     .json({ message: 'Operation successful', new_balance: balance - amount });
 });
 
+app.delete('/account/delete', checkAccountExists, (req, res) => {
+  const { cpf } = req.customer;
+
+  const index = customers.indexOf(
+    customers.find((customer) => customer.cpf === cpf)
+  );
+  customers.splice(index);
+
+  return res.status(200).json({ message: 'Account deleted' });
+});
+
 const PORT = 3333;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

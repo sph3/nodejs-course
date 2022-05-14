@@ -27,9 +27,28 @@ const getBalance = (statement) => {
   return balance;
 };
 
-app.get('/account/statement/', checkAccountExists, (req, res) => {
-  return res.status(200).json(req.customer.statement);
+app.get('/account/statement', checkAccountExists, (req, res) => {
+  const { statement } = req.customer;
+  const { date } = req.query;
+
+  // if there's no date query param
+  if (!date) {
+    return res.status(200).json(statement);
+  }
+
+  const dateFormat = new Date(date + ' 00:00');
+  const filteredStatement = statement.filter(
+    (statement) =>
+      statement.created_at.toDateString() ===
+      new Date(dateFormat).toDateString()
+  );
+
+  return res.status(200).json(filteredStatement);
 });
+
+// app.get('/account/statement', checkAccountExists, (req, res) => {
+//   return res.status(200).json(req.customer.statement);
+// });
 
 app.post('/account', (req, res) => {
   const { name, cpf } = req.body;

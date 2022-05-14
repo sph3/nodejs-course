@@ -5,23 +5,30 @@ const app = express();
 app.use(express.json());
 
 const customers = [];
-/**
- * account properties
- * cpf - string - user provided
- * name - string - user provided
- * id - uuid
- * statement - []
- */
 
-app.get('/account/statement/', (req, res) => {
+const checkAccountExists = (req, res, next) => {
   const { cpf } = req.headers;
-
   const customer = customers.find((customer) => customer.cpf === cpf);
   if (!customer) {
-    return res.status(400).json({ error: "Customer doesn't exist" });
+    return res.status(400).json({ error: 'Customer not found' });
   }
+  req.customer = customer;
+  return next();
+};
 
-  return res.status(200).json(customer.statement);
+const getBalance = (statement) => {
+  const balance = statement.reduce((acc, operation) => {
+    if (operation.type === 'credit') {
+      return acc + operation.amount;
+    }
+    return acc - operation.amount;
+  }, 0);
+
+  return balance;
+};
+
+app.get('/account/statement/', checkAccountExists, (req, res) => {
+  return res.status(200).json(req.customer.statement);
 });
 
 app.post('/account', (req, res) => {
@@ -42,7 +49,49 @@ app.post('/account', (req, res) => {
     statement: [],
   });
 
+  const customer = customers.find((customer) => customer.cpf === cpf);
+
   return res.status(201).send('Account created');
+});
+
+app.post('/account/deposit', checkAccountExists, (req, res) => {
+  const { customer } = req;
+  const { description, amount } = req.body;
+  const balance = getBalance(customer.statement);
+
+  const statementOperation = {
+    description,
+    amount,
+    created_at: new Date(),
+    type: 'credit',
+  };
+
+  customer.statement.push(statementOperation);
+
+  return res
+    .status(201)
+    .json({ message: 'Operation successful', new_balance: balance + amount });
+});
+
+app.post('/account/withdraw', checkAccountExists, (req, res) => {
+  const { customer } = req;
+  const { amount } = req.body;
+  const balance = getBalance(customer.statement);
+
+  if (balance < amount) {
+    return res.status(400).json({ error: 'Insufficient funds' });
+  }
+
+  const statementOperation = {
+    amount,
+    created_at: new Date(),
+    type: 'debit',
+  };
+
+  customer.statement.push(statementOperation);
+  return res
+    .status(201)
+    .json({ message: 'Operation successful', new_balance: balance - amount });
 });
 
 const PORT = 3333;

@@ -31,7 +31,7 @@ app.get('/account/balance', checkAccountExists, (req, res) => {
   const { statement } = req.customer;
   const balance = getBalance(statement);
 
-  return res.status(200).json({ balance: balance });
+  return res.status(200).json(balance);
 });
 
 app.get('/account/statement', checkAccountExists, (req, res) => {

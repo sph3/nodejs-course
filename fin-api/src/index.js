@@ -124,12 +124,9 @@ app.put('/account', checkAccountExists, (req, res) => {
 });
 
 app.delete('/account/delete', checkAccountExists, (req, res) => {
-  const { cpf } = req.customer;
+  const { customer } = req;
 
-  const index = customers.indexOf(
-    customers.find((customer) => customer.cpf === cpf)
-  );
-  customers.splice(index);
+  customers.splice(customer, 1);
 
   return res.status(200).json({ message: 'Account deleted' });
 });

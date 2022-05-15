@@ -27,6 +27,13 @@ const getBalance = (statement) => {
   return balance;
 };
 
+app.get('/account/balance', checkAccountExists, (req, res) => {
+  const { statement } = req.customer;
+  const balance = getBalance(statement);
+
+  return res.status(200).json({ balance: balance });
+});
+
 app.get('/account/statement', checkAccountExists, (req, res) => {
   const { statement } = req.customer;
   const { date } = req.query;
@@ -128,7 +135,7 @@ app.delete('/account/delete', checkAccountExists, (req, res) => {
 
   customers.splice(customer, 1);
 
-  return res.status(200).json({ message: 'Account deleted' });
+  return res.status(200).json({ message: 'Account deleted', customers });
 });
 
 const PORT = 3333;
